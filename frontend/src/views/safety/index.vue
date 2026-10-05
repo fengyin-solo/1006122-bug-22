@@ -77,6 +77,7 @@ import {
   downloadEntries,
   listEntries,
   moduleMeta,
+  presentHeadcountForSafety,
   runAction as applyAction,
 } from '@/api/local-service'
 import type { EntryRow } from '@/data/types'
@@ -85,13 +86,19 @@ const meta = moduleMeta('safety')
 const columns = ["巡检编号", "巡检区域", "巡检项目", "发现问题", "隐患等级", "整改期限", "巡检人员", "巡检状态"]
 const actions = ["提交巡检", "派发整改", "确认闭环"]
 const statuses = ["待巡检", "已巡检", "待整改", "已闭环"]
-const stats = [{"label": "待巡检区域", "value": 0}, {"label": "待整改隐患", "value": 0}, {"label": "已闭环隐患", "value": 0}]
 
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
 const filterFields = columns.slice(0, 3)
+// 第四张卡是班组台账同源的在场人数：班组退场销账后，两边数字一起变。
+const stats = computed(() => [
+  { label: "待巡检区域", value: rows.value.filter((row) => String(row.status) === "待巡检").length },
+  { label: "待整改隐患", value: rows.value.filter((row) => String(row.status) === "待整改").length },
+  { label: "已闭环隐患", value: rows.value.filter((row) => String(row.status) === "已闭环").length },
+  { label: "在场人数（取自班组台账）", value: presentHeadcountForSafety() },
+])
 const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,

@@ -48,6 +48,21 @@ export function saveRows(key: string, rows: EntryRow[]): void {
   }
 }
 
+// 跨模块的一次销账：所有改动先在副本上合成，再一次性落盘。
+// 序列化或 setItem 抛错时缓存保持原样——整笔回退，不会出现标记改了、数字没动。
+export function commitAll(patches: Record<string, EntryRow[]>): void {
+  const next: Record<string, EntryRow[]> = { ...allRows() }
+  for (const [key, rows] of Object.entries(patches)) {
+    next[key] = clone(rows)
+  }
+  const serialized = JSON.stringify(next)
+  if (typeof window !== 'undefined' && window.localStorage) {
+    // 抛错（如配额超限）时直接冒泡给调用方，cache 不动，调用方据此提示已回退。
+    window.localStorage.setItem(STORAGE_KEY, serialized)
+  }
+  cache = next
+}
+
 export function resetRows(key: string): EntryRow[] {
   const rows = clone(SEED_ROWS[key] ?? [])
   saveRows(key, rows)
