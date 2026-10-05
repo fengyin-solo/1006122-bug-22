@@ -15,6 +15,12 @@
         <strong class="stat-value">{{ card.value }}</strong>
       </article>
     </div>
+    <div class="stat-row">
+      <article class="stat-card">
+        <span class="stat-label">当前在场人数（权威源：班组台账）</span>
+        <strong class="stat-value">{{ presentHeadcount }}</strong>
+      </article>
+    </div>
     <table class="data-table">
       <thead>
         <tr><th>业务模块</th><th>今日新增</th><th>待处理</th><th>异常量</th></tr>
@@ -38,15 +44,18 @@
 import { onMounted, ref } from 'vue'
 
 import { loadOverview } from '@/api/local-service'
+import { currentPresentHeadcount } from '@/data/crew-service'
 import type { OverviewResult } from '@/data/types'
 
 const cards = ref<OverviewResult['cards']>([])
 const moduleRows = ref<OverviewResult['modules']>([])
+const presentHeadcount = ref(0)
 
 function refresh() {
   const payload = loadOverview()
   cards.value = payload.cards
   moduleRows.value = payload.modules
+  presentHeadcount.value = currentPresentHeadcount()
 }
 
 onMounted(refresh)

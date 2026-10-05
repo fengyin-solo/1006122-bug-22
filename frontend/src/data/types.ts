@@ -32,6 +32,19 @@ export type ActionResult = {
   message: string
 }
 
+/** 领域动作结果：duplicate 表示命中幂等拦截（请求有效，但不重复落账）。 */
+export type DomainActionResult = ActionResult & {
+  duplicate?: boolean
+}
+
+/** 当前登录账号：角色 + 所属项目共同决定能不能动责任划分。 */
+export type Actor = {
+  account: string
+  name: string
+  role: string
+  project: string
+}
+
 export type OverviewResult = {
   cards: { label: string; value: number }[]
   modules: { name: string; created: number; pending: number; abnormal: number }[]

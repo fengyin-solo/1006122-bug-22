@@ -39,6 +39,10 @@ export function runAction(key: string, id: number, action: string): ActionResult
   if (index < 0) {
     return { ok: false, message: `没有找到编号为 ${id} 的${meta.entity}` }
   }
+  if (key === 'safety' && String(rows[index]['记录类型'] ?? '') === '班组退场销账') {
+    // 销账待办跟着班组进退场走账，不允许在巡检页用通用动作越级改状态。
+    return { ok: false, message: '该记录是班组退场销账待办，随班组进退场自动生成与闭环，不能在巡检页手工流转' }
+  }
   const current = String(rows[index].status)
   if (current === target) {
     return { ok: false, message: `${meta.entity}已经是「${target}」，不用重复操作` }
